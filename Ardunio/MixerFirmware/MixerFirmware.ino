@@ -72,11 +72,14 @@ int32_t encoder_last_positions[] = {0, 0, 0, 0};
 int32_t encoder_position_changes[] = {0, 0, 0, 0};
 bool button_states[] = {false, false, false, false, false, false, false, false};
 bool button_last_states[] = {false, false, false, false, false, false, false, false};
-bool encoder_button_states[] = {false,false,false,false};
-bool encoder_button_last_states[] = {false,false,false,false};
+bool encoder_button_states[] = {false, false, false, false};
+bool encoder_button_last_states[] = {false, false, false, false};
 
 int ring_levels[4] = {0, 0, 0, 0};
 String app_names[4] = {"none", "none", "none", "none"};
+
+long ringColors[4] = {0xFF8000, 0xFF8000, 0xFF8000, 0xFF8000};
+long buttonColors[8] = {0xFF8000, 0x0026FF, 0xFF8000, 0x0026FF, 0xFF8000, 0x0026FF, 0xFF8000, 0x0026FF};
 
 bool serialFirstTime = true;
 
@@ -92,8 +95,8 @@ void serialWrite() {
     Serial.print(button_states[i]);
     Serial.print(",");
   };
-  for(int i = 0; i < 4; i++){
-    Serial.print(encoder_button_states[i]);
+  for (int i = 0; i < 4; i++) {
+    Serial.print(!encoder_button_states[i]);
     Serial.print(",");
   }
   Serial.println("]");
@@ -201,11 +204,9 @@ void loop() {
         if (!button_states[4 * i]) {
           button_states[4 * i] = true;
           serialWrite();
-          neokey.pixels.setPixelColor(0, 0xFF0000); // red
         }
       } else {
         if (button_states[4 * i]) {
-          neokey.pixels.setPixelColor(0, 0);
           button_states[4 * i] = false;
           serialWrite();
         }
@@ -216,11 +217,9 @@ void loop() {
         if (!button_states[(4 * i) + 1]) {
           button_states[(4 * i) + 1] = true;
           serialWrite();
-          neokey.pixels.setPixelColor(1, 0xFFFF00); // yellow
         }
       } else {
         if (button_states[(4 * i) + 1]) {
-          neokey.pixels.setPixelColor(1, 0);
           button_states[(4 * i) + 1] = false;
           serialWrite();
         }
@@ -230,11 +229,9 @@ void loop() {
         if (!button_states[(4 * i) + 2]) {
           button_states[(4 * i) + 2] = true;
           serialWrite();
-          neokey.pixels.setPixelColor(2, 0x00FF00); // green
         }
       } else {
         if (button_states[(4 * i) + 2]) {
-          neokey.pixels.setPixelColor(2, 0);
           button_states[(4 * i) + 2] = false;
           serialWrite();
         }
@@ -244,75 +241,84 @@ void loop() {
         if (!button_states[(4 * i) + 3]) {
           button_states[(4 * i) + 3] = true;
           serialWrite();
-          neokey.pixels.setPixelColor(3, 0x00FFFF); // blue
         }
       } else {
         if (button_states[(4 * i) + 3]) {
-          neokey.pixels.setPixelColor(3, 0);
           button_states[(4 * i) + 3] = false;
           serialWrite();
         }
       }
-
-      for (int i = 0; i < 4; i++) {
-        encoder_positions[i] = encoders[i].getEncoderPosition();
-        encoder_button_states[i] = encoders[i].digitalRead(SS_SWITCH);
-        if (encoder_positions[i] != encoder_last_positions[i]) {
-          encoder_position_changes[i] = encoder_positions[i] - encoder_last_positions[i];
-          serialWrite();
-          encoder_last_positions[i] = encoder_positions[i];
-        } else {
-          encoder_position_changes[i] = 0;
-        }
-        if (encoder_button_states[i] != encoder_button_last_states[i]){
-          serialWrite();
-          encoder_button_last_states[i] = encoder_button_states[i];
-        }
+      for(int b = 0;b < 4; b++){
+        neokey.pixels.setPixelColor(b, buttonColors[(4 * i) + b]);
       }
-
       neokey.pixels.show();
+    }
 
-      while (Serial.available() > 0) {
-        //Serial.println("Start");
-        Serial.readStringUntil(',').toCharArray(inData[inputCount], 255);
-        //Serial.println(String(inData[inputCount]));
-        inputCount ++;
-        if (String(inData[inputCount - 1]) == "") {
-          inputCount = 0;
-          int displayCount = 0;
-          for (int i = 0; i <= 6; i += 2) {
-            //Serial.println("Display Text: " + String(inData[i]));
-            displays[displayCount].clearDisplay();
-            displays[displayCount].setTextSize(2);
-            displays[displayCount].setTextColor(SSD1306_WHITE);
-            displays[displayCount].setCursor(0, 0);
-            displays[displayCount].println(String(inData[i]));
-            displays[displayCount].display();
-            displayCount ++;
+    for (int i = 0; i < 4; i++) {
+      encoder_positions[i] = encoders[i].getEncoderPosition();
+      encoder_button_states[i] = encoders[i].digitalRead(SS_SWITCH);
+      if (encoder_positions[i] != encoder_last_positions[i]) {
+        encoder_position_changes[i] = encoder_positions[i] - encoder_last_positions[i];
+        serialWrite();
+        encoder_last_positions[i] = encoder_positions[i];
+      } else {
+        encoder_position_changes[i] = 0;
+      }
+      if (encoder_button_states[i] != encoder_button_last_states[i]) {
+        serialWrite();
+        encoder_button_last_states[i] = encoder_button_states[i];
+      }
+    }
 
+    while (Serial.available() > 0) {
+      //Serial.println("Start");
+      Serial.readStringUntil(',').toCharArray(inData[inputCount], 255);
+      //Serial.println(String(inData[inputCount]));
+      inputCount ++;
+      if (String(inData[inputCount - 1]) == "") {
+        inputCount = 0;
+        int displayCount = 0;
+
+        for (int i = 0; i < 4; i++) {
+          ringColors[i] = String(inData[i + 8]).toInt();
+        }
+        for (int i = 0; i < 8; i++) {
+          buttonColors[i] = String(inData[i + 12]).toInt();
+        }
+
+        for (int i = 0; i <= 6; i += 2) {
+          //Serial.println("Display Text: " + String(inData[i]));
+          displays[displayCount].clearDisplay();
+          displays[displayCount].setTextSize(2);
+          displays[displayCount].setTextColor(SSD1306_WHITE);
+          displays[displayCount].setCursor(0, 0);
+          displays[displayCount].println(String(inData[i]));
+          displays[displayCount].display();
+          displayCount ++;
+
+        }
+        int ringCount = 0;
+        for (int i = 1; i <= 7; i += 2)
+        {
+          ring_levels[ringCount] = String(inData[i]).toInt();
+          //Serial.println("Ring count: " + String(ring_l/evels[ringCount] + 100));
+          rings[ringCount].clear();
+          for (int r = 0; r < ring_levels[ringCount]; r++) {
+            rings[ringCount].setPixelColor(ring_pixel_order[r], ringColors[ringCount]);
           }
-          int ringCount = 0;
-          for (int i = 1; i <= 7; i += 2)
-          {
-            ring_levels[ringCount] = String(inData[i]).toInt();
-            //Serial.println("Ring count: " + String(ring_levels[ringCount] + 100));
-            rings[ringCount].clear();
-            for (int r = 0; r < ring_levels[ringCount]; r++) {
-              rings[ringCount].setPixelColor(ring_pixel_order[r], rings[ringCount].Color(255,   0,   0));
-            }
-            rings[ringCount].show();
-            ringCount++;
+          rings[ringCount].show();
+          ringCount++;
 
-          }
         }
       }
-
     }
+
   } else {
     for (int i = 0; i < 4; i++) {
       rings[i].fill(rings[i].Color(0,   0,   255));
       rings[i].show();            // Turn OFF all pixels ASAP
     }
     serialFirstTime = true;
+
   }
 }
