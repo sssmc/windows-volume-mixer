@@ -72,6 +72,8 @@ int32_t encoder_last_positions[] = {0, 0, 0, 0};
 int32_t encoder_position_changes[] = {0, 0, 0, 0};
 bool button_states[] = {false, false, false, false, false, false, false, false};
 bool button_last_states[] = {false, false, false, false, false, false, false, false};
+bool encoder_button_states[] = {false,false,false,false};
+bool encoder_button_last_states[] = {false,false,false,false};
 
 int ring_levels[4] = {0, 0, 0, 0};
 String app_names[4] = {"none", "none", "none", "none"};
@@ -90,9 +92,13 @@ void serialWrite() {
     Serial.print(button_states[i]);
     Serial.print(",");
   };
+  for(int i = 0; i < 4; i++){
+    Serial.print(encoder_button_states[i]);
+    Serial.print(",");
+  }
   Serial.println("]");
 };
-void processInputData(char[] input);
+
 
 
 void setup() {
@@ -250,12 +256,17 @@ void loop() {
 
       for (int i = 0; i < 4; i++) {
         encoder_positions[i] = encoders[i].getEncoderPosition();
+        encoder_button_states[i] = encoders[i].digitalRead(SS_SWITCH);
         if (encoder_positions[i] != encoder_last_positions[i]) {
           encoder_position_changes[i] = encoder_positions[i] - encoder_last_positions[i];
           serialWrite();
           encoder_last_positions[i] = encoder_positions[i];
         } else {
           encoder_position_changes[i] = 0;
+        }
+        if (encoder_button_states[i] != encoder_button_last_states[i]){
+          serialWrite();
+          encoder_button_last_states[i] = encoder_button_states[i];
         }
       }
 
