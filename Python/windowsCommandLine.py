@@ -1,5 +1,6 @@
 from asyncio.windows_events import NULL
 from ctypes import cast, POINTER
+from distutils.log import error
 from pickle import NONE
 from re import I
 from tarfile import NUL
@@ -32,6 +33,9 @@ global app_list_end_index
 app_list_start_index = 0
 app_list_end_index = 3
 
+mutes = [False,False,False,False]
+
+
 
 while(True):
     try:
@@ -53,6 +57,10 @@ while(True):
                     app_list = []
                     ring_levels = ['0','0','0','0']
                     app_names = ["none","none","none"]
+                    
+                    ring_mute_color = 0xff0000
+                    ring_color = 0xff8800
+                    ring_colors = [ring_color,ring_color,ring_color,ring_color]
                     #Parse Line
                     try:
                         line_list = ast.literal_eval(line)
@@ -86,12 +94,17 @@ while(True):
                         elif line_list[9] == 0:
                             keyboard.release(Key.media_previous)
 
-                        #Master Volumes
+                        #Master Volume
 
                         devices = AudioUtilities.GetSpeakers()
                         interface = devices.Activate(
                             IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
                         master_volume = cast(interface, POINTER(IAudioEndpointVolume))
+
+                        if bool(line_list[12]):
+                            mutes[0] = not mutes[0]
+                                
+                        master_volume.SetMute(mutes[0], None)
 
                         master_volume_range = master_volume.GetVolumeRange()
                         master_volume_change_increment = (master_volume_range[0] - master_volume_range[1]) / master_volume_change_step
@@ -103,6 +116,11 @@ while(True):
                             print("Master: {}".format(new_master_volume))
                             ring_levels[0] = str(int(interp(new_master_volume,[master_volume_range[0],master_volume_range[1]],[0,16])))
 
+                        if master_volume.GetMute():
+                            ring_levels[0] = '16'
+                            ring_colors[0] = ring_mute_color                        
+                        
+                        
                         #App Volumes
 
                         sessions = AudioUtilities.GetAllSessions()
@@ -118,6 +136,12 @@ while(True):
                             if i < len(app_list):
                                 volume = app_list[i].SimpleAudioVolume
 
+                                if bool(line_list[line_list_index + 12]):
+                                    mutes[line_list_index] = not mutes[line_list_index]
+                                    print("Mute set: " + str(mutes[line_list_index]))
+                                
+                                volume.SetMute(mutes[line_list_index], None)
+
                                 NewRange = (volumerange[0] - volumerange[1])  
 
                                 new_volume = volume.GetMasterVolume()  + (volume_change_increment * line_list[line_list_index])
@@ -128,6 +152,10 @@ while(True):
 
                                 ring_levels[line_list_index] = str(int(16 * new_volume))
                                 app_names[line_list_index - 1] = str(app_list[i].Process.name())
+
+                                if volume.GetMute():
+                                    ring_levels[line_list_index] = '16'
+                                    ring_colors[line_list_index] = ring_mute_color  
 
                             line_list_index += 1
 
@@ -140,10 +168,14 @@ while(True):
                             out_string += app_name
                             out_string += ","
                             out_string += ring_levels[i + 1]
-                            if i != 2:
-                                out_string += ","
+                            out_string += ","
                         
-                        out_string += ',16744448,16711935,16744448,16711935,9983,16711935,99838,16711935,9983,16711935,9983,16711935,,'
+                        for color in ring_colors:
+                            out_string += str(color)
+                            out_string += ","
+
+
+                        out_string += '9983,16711935,99838,16711935,9983,16711935,9983,16711935,,'
 
                         s.write(out_string.encode())
                         print(out_string)
