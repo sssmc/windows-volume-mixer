@@ -59,7 +59,9 @@ while(True):
                     app_names = ["none","none","none"]
                     
                     ring_mute_color = 0xff0000
-                    ring_color = 0xff8800
+                    ring_color = 0xfa3c07
+                    button_color = 0xa0e6fa
+                    button_colors = [button_color,button_color,button_color,button_color,button_color,button_color,button_color,button_color]
                     ring_colors = [ring_color,ring_color,ring_color,ring_color]
                     #Parse Line
                     try:
@@ -173,9 +175,11 @@ while(True):
                         for color in ring_colors:
                             out_string += str(color)
                             out_string += ","
+                        for color in button_colors:
+                            out_string += str(color)
+                            out_string += ","
 
-
-                        out_string += '9983,16711935,99838,16711935,9983,16711935,9983,16711935,,'
+                        out_string += ','
 
                         s.write(out_string.encode())
                         print(out_string)
