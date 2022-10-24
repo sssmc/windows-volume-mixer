@@ -19,6 +19,13 @@ from pynput.keyboard import Key, Controller
 #Master Volume Setup
 master_volume_change_step = 140
 
+devices = AudioUtilities.GetSpeakers()
+interface = devices.Activate(
+            IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+master_volume = cast(interface, POINTER(IAudioEndpointVolume))
+
+master_volume_range = master_volume.GetVolumeRange()
+
 keyboard = Controller()
 
 #Volume Range/Increment
@@ -60,6 +67,7 @@ while(True):
                     
                     ring_mute_color = 0xff0000
                     ring_color = 0xfa3c07
+                    ring_error_color = 0x0000ff
                     button_color = 0xa0e6fa
                     button_colors = [button_color,button_color,button_color,button_color,button_color,button_color,button_color,button_color]
                     ring_colors = [ring_color,ring_color,ring_color,ring_color]
@@ -102,25 +110,34 @@ while(True):
                         interface = devices.Activate(
                             IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
                         master_volume = cast(interface, POINTER(IAudioEndpointVolume))
+                        print("Master object: " + str(master_volume))
 
-                        if bool(line_list[12]):
-                            mutes[0] = not mutes[0]
-                                
-                        master_volume.SetMute(mutes[0], None)
+                        try:
+                            master_volume_change_increment = (master_volume_range[0] - master_volume_range[1]) / master_volume_change_step
+                            new_master_volume = master_volume.GetMasterVolumeLevel()  + (master_volume_change_increment * master_knob_change)
+                        except:
+                            print("MasterVolumeError")
+                            ring_levels[0] = '16'
+                            ring_colors[0] = ring_error_color 
+                            
+                        else:
+                            if bool(line_list[12]):
+                                mutes[0] = not mutes[0]
+                                master_volume.SetMute(mutes[0], None)
+                                    
 
-                        master_volume_range = master_volume.GetVolumeRange()
-                        master_volume_change_increment = (master_volume_range[0] - master_volume_range[1]) / master_volume_change_step
-
-                        new_master_volume = master_volume.GetMasterVolumeLevel()  + (master_volume_change_increment * master_knob_change)
-
-                        if(new_master_volume <= master_volume_range[1] and new_master_volume >= master_volume_range[0]):
+                            if(new_master_volume > master_volume_range[1]):
+                                new_master_volume = master_volume_range[1]
+                            elif(new_master_volume < master_volume_range[0]):
+                                new_master_volume = master_volume_range[0]
+                            
                             master_volume.SetMasterVolumeLevel(new_master_volume, None)
                             print("Master: {}".format(new_master_volume))
                             ring_levels[0] = str(int(interp(new_master_volume,[master_volume_range[0],master_volume_range[1]],[0,16])))
 
-                        if master_volume.GetMute():
-                            ring_levels[0] = '16'
-                            ring_colors[0] = ring_mute_color                        
+                            if master_volume.GetMute():
+                                ring_levels[0] = '16'
+                                ring_colors[0] = ring_mute_color                        
                         
                         
                         #App Volumes
@@ -137,10 +154,9 @@ while(True):
                         for i in range(app_list_start_index,app_list_end_index):
                             if i < len(app_list):
                                 volume = app_list[i].SimpleAudioVolume
-
+                                mutes[line_list_index] = volume.GetMute()
                                 if bool(line_list[line_list_index + 12]):
                                     mutes[line_list_index] = not mutes[line_list_index]
-                                    print("Mute set: " + str(mutes[line_list_index]))
                                 
                                 volume.SetMute(mutes[line_list_index], None)
 
