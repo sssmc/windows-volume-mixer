@@ -8,8 +8,11 @@ import serial
 import ast
 from pynput.keyboard import Key, Controller
 
-#Com port of mixed
-COM_PORT = 'COM5'
+#Com port of mixer
+COM_PORT = 'COM10'
+
+#Serial Baud Rate
+SERIAL_BAUD_RATE = 4000000
 
 #Speed of Volume Change(Larger = Faster)
 MASTER_VOLUME_CHANGE_STEP = 140
@@ -223,7 +226,7 @@ def processLine(line_list):
 #Main loop
 while(True):
     try: #Try to start serial connection to specifed com port
-        s = serial.Serial(COM_PORT, timeout=0.1, baudrate=4000000)
+        s = serial.Serial(COM_PORT, timeout=0.1, baudrate=SERIAL_BAUD_RATE)
     except: #Unable to connect to serial
         print("Serial Error")
         #Wait a bit before try serial connection again
