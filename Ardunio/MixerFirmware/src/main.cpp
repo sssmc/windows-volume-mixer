@@ -175,6 +175,8 @@ void setup() {
 
     //Set intial positions for the encoders
     encoder_positions[i] = encoders[i].getEncoderPosition();
+    encoder_button_states[i] = encoders[i].digitalRead(SS_SWITCH);
+    encoder_button_last_states[i] = encoders[i].digitalRead(SS_SWITCH);
   }
 
   //Start the neopixel rings
