@@ -30,6 +30,8 @@
 //Serial Baud Rate
 #define SERIAL_BAUD_RATE 4000000
 
+#define SLEEP_DELAY 6000
+
 int inputCount = 0;
 
 //I2C addresses
@@ -87,7 +89,7 @@ bool button_states[] = {false, false, false, false, false, false, false, false};
 bool button_last_states[] = {false, false, false, false, false, false, false, false};
 
 //Colors of the neokey button backlights(hex)
-int buttonColors[8] = {0xFF8000, 0x0026FF, 0xFF8000, 0x0026FF, 0xFF8000, 0x0026FF, 0xFF8000, 0x0026FF};
+int buttonColors[8] = {0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF};
 
 //Neopixel ring levels(0-16)
 int ring_levels[4] = {0, 0, 0, 0};
@@ -106,6 +108,9 @@ char appNames[4][255];
 
 //Is it the first time going thorugh the loop since the serial was connected
 bool serialFirstTime = true;
+
+//Sleep Timer
+unsigned long sleepTimerStart = 0;
 
 
 //--Function Prototypes--//
@@ -132,6 +137,10 @@ void setDisplays();
 //Set neopixel rings to the no connection color and set a no connection message on the first screen
 //Option so clear all displays
 void setNoConnection(bool clearDisplay);
+
+//Puts device in sleep mode
+void setSleep();
+
 
 void setup() {
 
@@ -193,11 +202,19 @@ void setup() {
   //Start the serial connection and wait until the pc connect before proceding
   Serial.begin(SERIAL_BAUD_RATE);
 
+  sleepTimerStart = millis();
+
 }
 
 void loop() {
   
   //If the pc is connected to the serial
+
+  //Neokeys
+  getKeys();
+
+  //Encoders
+  getEncoders();
   if (Serial) {
     //If there is the first loop since the serial was connected, sent data to get a respose from the pc
     if (serialFirstTime) {
@@ -205,45 +222,52 @@ void loop() {
       serialFirstTime = false;
     }
 
-    //Neokeys
-    getKeys();
-
-    //Encoders
-    getEncoders();
+    sleepTimerStart = millis();//Restart sleep timer(since the device does not sleep when connected to serial)
 
     //While they are bytes in the serial buffer, read data and set rings/displays
     while (Serial.available() > 0) {
 
         serialRead();
-      }
+    }
 
-  } else {
+  }else
+  {
     //If there is no serial connection, set ring and displays to no connection state
 
-    setNoConnection(true);
-
     serialFirstTime = true;
+
+    //If the sleep timer triggers(the serial connection has been lost for the sleep delay or more)
+    if((millis() - sleepTimerStart) > SLEEP_DELAY){
+
+      setSleep();
+
+    } else{
+      setNoConnection(true);
+    }
 
   }
 }
 
 void serialWrite() {
-  Serial.print("[");
+  sleepTimerStart = millis();//Restart sleep timer(since a user changed an input)
+  if(Serial){
+    Serial.print("[");
 
-  for (int i = 0; i < 4; i++) {
-    Serial.print(encoder_position_changes[i]);
-    Serial.print(",");
-  }
+    for (int i = 0; i < 4; i++) {
+      Serial.print(encoder_position_changes[i]);
+      Serial.print(",");
+    }
 
-  for (int i = 0; i < 8; i++) {
-    Serial.print(button_states[i]);
-    Serial.print(",");
-  };
-  for (int i = 0; i < 4; i++) {
-    Serial.print(!encoder_button_states[i]);
-    Serial.print(",");
+    for (int i = 0; i < 8; i++) {
+      Serial.print(button_states[i]);
+      Serial.print(",");
+    };
+    for (int i = 0; i < 4; i++) {
+      Serial.print(!encoder_button_states[i]);
+      Serial.print(",");
+    }
+    Serial.println("]");
   }
-  Serial.println("]");
 }
 
 void getKeys(){
@@ -364,6 +388,8 @@ void setRings(){
 
 void serialRead(){
 
+  sleepTimerStart = millis();
+
   //Read string until a comma is reached(end of value), String is then converted into char array and added to in data array
   Serial.readStringUntil(',').toCharArray(inData[inputCount], 255);
 
@@ -407,6 +433,7 @@ void serialRead(){
 }
 
 void setNoConnection(bool clearDisplay){
+
   //Clear right three displays if needed
   if(clearDisplay){
     for(int i = 1; i < 4; i++){
@@ -427,6 +454,28 @@ void setNoConnection(bool clearDisplay){
   for (int i = 0; i < 4; i++) {
       rings[i].fill(NO_CONNECT_COLOR);
       rings[i].show();
+  }
+
+  //Set button backlights to no connection colors
+  for(int i = 0; i < 8; i++){
+        buttonColors[i] = NO_CONNECT_COLOR;
+  }
+  
+
+}
+
+void setSleep(){
+
+  //Clear all displayes and rings
+  for(int i = 0; i < 4; i++){
+    displays[i].clearDisplay();
+    displays[i].display();
+    rings[i].fill(0);
+    rings[i].show();
+  }
+  //Turn off all button backlights
+  for(int i = 0; i < 8; i++){
+    buttonColors[i] = 0;
   }
 
 }
