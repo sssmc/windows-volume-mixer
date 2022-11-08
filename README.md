@@ -25,24 +25,26 @@ The electronics are mostly final state. Since the components were chosen to faci
 
 The current 3D-printed enclosure consists of a solid faceplate mounted on an open frame. A fully enclosed design could add more polish to the project.
 
-##Software
+## Software
 
 Software/firmware is where most of the remaining work is to be done on the project. The firmware on the microcontroller is fairly complete and has no know bugs at this time. The python script running on the pc has a few know issues and quite a few features to be implemented.
 
 Know issues:
-•	Intermittent crashes when switching audio outputs in windows.
-•	Intermittent loss of master volume control.
-•	Random script crashes.
-
+<ol>
+    <li>Intermittent crashes when switching audio outputs in windows.</li>
+    <li>Intermittent loss of master volume control.</li>
+    <li>Random script crashes.</li>
+</ol>
 Missing features:
-•	When volumes or mutes are changed in windows, update mixer automatically.
-•	When output source is changed in windows, update mixer automatically.
-•	Display more info about channels on screens.
-•	Add more functions to buttons, including changing audio output sources.
-•	Add more user feedback using button backlights.
-•	Run python script in background(in task bar).
-•	Add GUI to view connection status and adjust settings
-
+<ol>
+    <li>When volumes or mutes are changed in windows, update mixer automatically.</li>
+    <li>When output source is changed in windows, update mixer automatically.</li>
+    <li>Display more info about channels on screens.</li>
+    <li>Add more functions to buttons, including changing audio output sources.</li>
+    <li>Add more user feedback using button backlights.</li>
+    <li>Run python script in background(in task bar).</li>
+    <li>Add GUI to view connection status and adjust settings.</li>
+</ol>
 
 
 
