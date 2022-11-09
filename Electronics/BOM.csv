@@ -1,0 +1,20 @@
+Part Name,Part No.,Manufacturer,Quantity,Source,Notes
+0.96in I2C 128x64 OLED,Various ,Various ,4,https://www.aliexpress.com/item/32638662748.html,
+NeoPixel Ring - 16 x 5050 RGB LED,1463,Adafruit,4,https://www.adafruit.com/product/1463,
+Adafruit I2C Stemma QT Rotary Encoder Breakout,4991,Adafruit,4,https://www.adafruit.com/product/4991,
+NeoKey 1x4 QT I2C - Four Mechanical Key Switches,4980,Adafruit,2,https://www.adafruit.com/product/4980,
+Adafruit Feather RP2040,4884,Adafruit,1,https://www.adafruit.com/product/4884,
+FeatherWing Proto,2884,Adafruit,1,https://www.adafruit.com/product/2884,
+Stacking Headers for Feather,2830,Adafruit,1,https://www.adafruit.com/product/2830,
+Cherry MX Compatiable Keyswitch,Various ,Various ,8,Various,
+Cherry MX Compatiable Keycap,Various ,Various ,8,Various,
+Qwiic/Stemma QT Cable - 50mm,Various ,Various ,4,Various,
+Qwiic/Stemma QT Cable - 100mm,Various ,Various ,2,Various,
+Qwiic Cable - Female Jumper (4-pin),Various ,Various ,1,Various,Modified to add a second set of female headers(to connected to 2 OLEDs)
+JST PH 2mm 4-Pin to Female Socket Cable - 200mm,3950,Adafruit,1,Various,Modified to add a second set of female headers(to connected to 2 OLEDs)
+JST PH 4-Pin Socket,Various ,Various ,1,Various,
+JST PH 3-Pin Socket,Various ,Various ,4,Various,
+JSP PH 3-Pin Connector,Various ,Various ,4,Various,
+Single Female Header Jumper,Various ,Various ,8,Various,For OLED cable modifications
+Misc. Hookup Wire,Various ,Various ,,Various,For cable modifications and connections on feather wing proto
+Misc. M3/M2 Machine Screws,Various ,Various ,,Various,
