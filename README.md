@@ -1,6 +1,8 @@
 # Windows Volume Mixer
 
-A physical hardware interface for adjusting main and per-app volumes in windows. 
+A physical hardware interface for adjusting main and per-app volumes in windows.
+
+![IMG_2627](https://github.com/sssmc/windows-volume-mixer/assets/12385051/5e2557f1-3fb4-4a69-8429-0d4602fd4705)
 
 ### Hardware
 
